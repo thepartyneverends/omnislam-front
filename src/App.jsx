@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import Header from './components/Header';
+import FloatingSocials from './components/FloatingSocials';
 import Hero from './components/Hero';
 import VideosSection from './components/VideosSection';
 import TestimonialsSection from './components/TestimonialsSection';
@@ -21,7 +22,7 @@ function App() {
   return (
     // App.jsx (фрагмент)
 <div className="min-h-screen bg-black text-white">
-  <Header scrollToSection={scrollToSection} />
+  <FloatingSocials />
   <section id="home"><Hero /></section>
   <section id="videos"><VideosSection /></section>
   <section id="testimonials" className="bg-black py-16"><TestimonialsSection /></section>

@@ -65,7 +65,6 @@ const TestimonialsSection = () => {
                   ref={(el) => (videoRefs.current[fb.id] = el)}
                   src={`${API_BASE}${fb.video_url}`} // ← добавляем базовый URL
                   className="w-full h-full object-cover"
-                  muted
                   playsInline
                   loop
                 />

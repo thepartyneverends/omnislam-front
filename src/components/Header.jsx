@@ -6,11 +6,25 @@ import { FaTelegram, FaInstagram, FaEnvelope, FaBars, FaTimes } from 'react-icon
 const Header = ({ scrollToSection }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showLogo, setShowLogo] = useState(false);
+  const [navPosition, setNavPosition] = useState('left');
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const scrollY = window.scrollY;
+      
+      // Хэдер становится непрозрачным после 20px скролла
+      setIsScrolled(scrollY > 20);
+      
+      // Логотип появляется после прокрутки на 80% высоты экрана
+      const heroHeight = window.innerHeight * 0.8;
+      setShowLogo(scrollY > heroHeight);
+      
+      // Навигация плавно смещается в центр после 50% высоты экрана
+      const centerThreshold = window.innerHeight * 0.3;
+      setNavPosition(scrollY > centerThreshold ? 'center' : 'left');
     };
+    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -29,7 +43,7 @@ const Header = ({ scrollToSection }) => {
 
   return (
     <header 
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
         isScrolled 
           ? 'bg-white/90 backdrop-blur-md shadow-lg' 
           : 'bg-transparent'
@@ -37,19 +51,24 @@ const Header = ({ scrollToSection }) => {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
-          <div className="flex-shrink-0">
-            <span className="text-2xl font-bold text-purple-500 transition-colors duration-300">
-              Omnislam
+          {/* Логотип появляется при скролле */}
+          <div className={`flex-shrink-0 transition-all duration-700 transform ${
+            showLogo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'
+          }`}>
+            <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+              OMNISLAM
             </span>
           </div>
 
-          {/* Десктопная навигация – цвет текста меняется */}
-          <nav className="hidden md:flex items-center justify-center space-x-1 lg:space-x-2">
+          {/* Навигация с плавным смещением */}
+          <nav className={`hidden md:flex items-center justify-start space-x-1 lg:space-x-2 transition-all duration-700 ease-in-out ${
+            navPosition === 'center' ? 'absolute left-1/2 transform -translate-x-1/2' : 'flex-1 justify-start'
+          }`}>
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`px-4 py-2 rounded-lg transition-all duration-200 font-medium text-l lg:text-base ${
+                className={`px-5 py-2.5 rounded-lg transition-all duration-200 font-medium text-xl lg:text-2xl ${
                   isScrolled 
                     ? 'text-gray-700 hover:text-purple-600 hover:bg-purple-50' 
                     : 'text-white hover:text-purple-300 hover:bg-white/10'
@@ -60,19 +79,19 @@ const Header = ({ scrollToSection }) => {
             ))}
           </nav>
 
-          {/* Десктопные соцсети – иконки меняют цвет */}
-          <div className="hidden md:flex items-center space-x-3">
+          {/* Десктопные соцсети */}
+          <div className="hidden md:flex items-center space-x-4">
             <a 
               href="https://t.me/ваш_логин" 
               target="_blank" 
               rel="noopener noreferrer"
               className={`p-2 rounded-full transition-colors ${
                 isScrolled 
-                  ? 'text-blue-600 hover:bg-purple-50' 
-                  : 'text-sky-500 hover:bg-white/10'
+                  ? 'text-blue-600 hover:text-purple-600 hover:bg-purple-50' 
+                  : 'text-sky-400 hover:text-purple-300 hover:bg-white/10'
               }`}
             >
-              <FaTelegram size={30} />
+              <FaTelegram size={32} />
             </a>
             <a 
               href="https://instagram.com/ваш_логин" 
@@ -81,24 +100,24 @@ const Header = ({ scrollToSection }) => {
               className={`p-2 rounded-full transition-colors ${
                 isScrolled 
                   ? 'text-orange-600 hover:text-purple-600 hover:bg-purple-50' 
-                  : 'text-orange-400 hover:text-purple-400 hover:bg-white/10'
+                  : 'text-orange-400 hover:text-purple-300 hover:bg-white/10'
               }`}
             >
-              <FaInstagram size={30} />
+              <FaInstagram size={32} />
             </a>
             <a 
               href="mailto:ваш_email@example.com" 
               className={`p-2 rounded-full transition-colors ${
                 isScrolled 
-                  ? 'text-gray-600 hover:text-amber-600 hover:bg-purple-50' 
-                  : 'text-amber-200 hover:text-amber-400 hover:bg-white/10'
+                  ? 'text-gray-600 hover:text-purple-600 hover:bg-purple-50' 
+                  : 'text-amber-200 hover:text-purple-300 hover:bg-white/10'
               }`}
             >
-              <FaEnvelope size={30} />
+              <FaEnvelope size={32} />
             </a>
           </div>
 
-          {/* Бургер-меню – меняет цвет */}
+          {/* Бургер-меню */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className={`md:hidden p-2 rounded-lg transition-colors ${
@@ -108,11 +127,11 @@ const Header = ({ scrollToSection }) => {
             }`}
             aria-label="Toggle menu"
           >
-            {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+            {isOpen ? <FaTimes size={28} /> : <FaBars size={28} />}
           </button>
         </div>
 
-        {/* Мобильное меню – фон и цвет текста */}
+        {/* Мобильное меню */}
         <div 
           className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
             isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
@@ -125,7 +144,7 @@ const Header = ({ scrollToSection }) => {
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`block w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${
+                className={`block w-full text-left px-4 py-4 rounded-lg transition-colors font-medium text-xl ${
                   isScrolled 
                     ? 'text-gray-700 hover:text-purple-600 hover:bg-purple-50' 
                     : 'text-white hover:text-purple-300 hover:bg-white/10'
@@ -134,8 +153,7 @@ const Header = ({ scrollToSection }) => {
                 {item.label}
               </button>
             ))}
-            {/* Соцсети в мобильном меню */}
-            <div className="flex justify-center space-x-6 pt-4">
+            <div className="flex justify-center space-x-8 pt-4">
               <a 
                 href="https://t.me/ваш_логин" 
                 target="_blank" 
@@ -144,7 +162,7 @@ const Header = ({ scrollToSection }) => {
                   isScrolled ? 'text-gray-600 hover:text-purple-600' : 'text-white hover:text-purple-300'
                 }`}
               >
-                <FaTelegram size={24} />
+                <FaTelegram size={28} />
               </a>
               <a 
                 href="https://instagram.com/ваш_логин" 
@@ -154,7 +172,7 @@ const Header = ({ scrollToSection }) => {
                   isScrolled ? 'text-gray-600 hover:text-purple-600' : 'text-white hover:text-purple-300'
                 }`}
               >
-                <FaInstagram size={24} />
+                <FaInstagram size={28} />
               </a>
               <a 
                 href="mailto:ваш_email@example.com" 
@@ -162,7 +180,7 @@ const Header = ({ scrollToSection }) => {
                   isScrolled ? 'text-gray-600 hover:text-purple-600' : 'text-white hover:text-purple-300'
                 }`}
               >
-                <FaEnvelope size={24} />
+                <FaEnvelope size={28} />
               </a>
             </div>
           </div>
