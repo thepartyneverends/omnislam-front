@@ -13,6 +13,45 @@ const ReelsCarousel = ({ reels }) => {
   const hideTimeout = useRef(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // --- Touch-события для свайпа ---
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.touches[0].clientX);
+    setTouchStartY(e.touches[0].clientY);
+    setIsSwiping(true);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isSwiping) return;
+    // Предотвращаем прокрутку страницы при свайпе по карусели
+    e.preventDefault();
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!isSwiping) return;
+    setIsSwiping(false);
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    // Определяем горизонтальный свайп (игнорируем вертикальные)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        // Свайп вправо → предыдущий рилс
+        prevReel();
+      } else {
+        // Свайп влево → следующий рилс
+        nextReel();
+      }
+    }
+  };
+
   // Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -131,9 +170,15 @@ const ReelsCarousel = ({ reels }) => {
   const nextIndex = (activeIndex + 1) % reels.length;
 
   return (
-    <div ref={containerRef} className="relative w-full flex items-center justify-center overflow-hidden py-8">
+    <div 
+      ref={containerRef} 
+      className="relative w-full flex items-center justify-center overflow-hidden py-8 touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="relative w-full max-w-6xl mx-auto flex items-center justify-center">
-        {/* Предыдущее видео (слева) - плавное появление/исчезновение */}
+        {/* Предыдущее видео (слева) */}
         <div
           className={`flex-shrink-0 w-1/5 sm:w-1/6 md:w-1/5 lg:w-1/6 xl:w-1/5 transition-all duration-500 ease-in-out cursor-pointer z-0 ${
             isTransitioning ? 'opacity-0 scale-75' : 'opacity-40 blur-sm scale-90 hover:opacity-70'
@@ -152,7 +197,7 @@ const ReelsCarousel = ({ reels }) => {
           </div>
         </div>
 
-        {/* Центральное видео (активное) - плавное масштабирование */}
+        {/* Центральное видео (активное) */}
         <div
           className={`flex-shrink-0 w-3/5 sm:w-2/3 md:w-1/2 lg:w-2/5 xl:w-1/3 z-10 transition-all duration-500 ease-in-out px-2 ${
             isTransitioning ? 'scale-95 opacity-50' : 'scale-100 opacity-100'
@@ -169,7 +214,7 @@ const ReelsCarousel = ({ reels }) => {
               playsInline
             />
 
-            {/* Центральная кнопка Play/Pause - плавное появление */}
+            {/* Центральная кнопка Play/Pause */}
             <div
               className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-in-out ${
                 controlsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
@@ -192,7 +237,7 @@ const ReelsCarousel = ({ reels }) => {
               </button>
             </div>
 
-            {/* Информация внизу - плавное появление */}
+            {/* Информация внизу */}
             <div className={`absolute bottom-3 left-3 right-3 flex justify-between items-center text-white text-sm bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg transition-all duration-500 ${
               isTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
             }`}>
@@ -200,7 +245,7 @@ const ReelsCarousel = ({ reels }) => {
               <span className="text-gray-300 whitespace-nowrap">{reels[activeIndex].duration}</span>
             </div>
 
-            {/* Кнопка мута видео */}
+            {/* Кнопки управления в верхнем правом углу */}
             <div className={`absolute top-3 right-3 flex gap-2 transition-all duration-500 ${
               isTransitioning ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0'
             }`}>
@@ -210,11 +255,11 @@ const ReelsCarousel = ({ reels }) => {
                 aria-label={isMuted ? 'Включить звук' : 'Выключить звук'}
               >
                 {isMuted ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 5.343a1 1 0 011.414 0A8 8 0 0118 10a8 8 0 01-2.343 5.657 1 1 0 11-1.414-1.414A6 6 0 0016 10a6 6 0 00-1.757-4.243 1 1 0 010-1.414zM11.414 8.757a1 1 0 011.414 0A4 4 0 0114 10a4 4 0 01-1.172 2.828 1 1 0 11-1.414-1.414A2 2 0 0012 10a2 2 0 00-.586-1.414 1 1 0 010-1.414z" clipRule="evenodd" />      
                   </svg>
                 )}
@@ -223,7 +268,7 @@ const ReelsCarousel = ({ reels }) => {
           </div>
         </div>
 
-        {/* Следующее видео (справа) - плавное появление/исчезновение */}
+        {/* Следующее видео (справа) */}
         <div
           className={`flex-shrink-0 w-1/5 sm:w-1/6 md:w-1/5 lg:w-1/6 xl:w-1/5 transition-all duration-500 ease-in-out cursor-pointer z-0 ${
             isTransitioning ? 'opacity-0 scale-75' : 'opacity-40 blur-sm scale-90 hover:opacity-70'
@@ -242,27 +287,31 @@ const ReelsCarousel = ({ reels }) => {
           </div>
         </div>
 
-        {/* Стрелки навигации - плавное появление/исчезновение */}
-        <button
-          onClick={prevReel}
-          className={`absolute left-1 sm:left-4 z-20 bg-white/10 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110 active:scale-95 ${
-            isTransitioning ? 'opacity-30' : 'opacity-100'
-          }`}
-          aria-label="Предыдущий"
-        >
-          ‹
-        </button>
-        <button
-          onClick={nextReel}
-          className={`absolute right-1 sm:right-4 z-20 bg-white/10 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110 active:scale-95 ${
-            isTransitioning ? 'opacity-30' : 'opacity-100'
-          }`}
-          aria-label="Следующий"
-        >
-          ›
-        </button>
+        {/* Стрелки навигации - только для десктопа */}
+<button
+  onClick={prevReel}
+  className={`absolute left-1 sm:left-4 z-20 bg-white/10 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110 active:scale-95 hidden sm:flex ${
+    isTransitioning ? 'opacity-30' : 'opacity-100'
+  }`}
+  aria-label="Предыдущий"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+  </svg>
+</button>
+<button
+  onClick={nextReel}
+  className={`absolute right-1 sm:right-4 z-20 bg-white/10 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110 active:scale-95 hidden sm:flex ${
+    isTransitioning ? 'opacity-30' : 'opacity-100'
+  }`}
+  aria-label="Следующий"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+  </svg>
+</button>
 
-        {/* Индикаторы - плавное изменение */}
+        {/* Индикаторы */}
         <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
           {reels.map((_, index) => (
             <button

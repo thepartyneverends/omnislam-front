@@ -17,7 +17,7 @@ const Hero = () => {
       style={{ backgroundImage: `url('/images/background-hero.jpg')` }}
     >
       {/* Затемнение */}
-      <div className="absolute inset-0 bg-black/30 z-0"></div>
+      <div className="absolute inset-0 bg-black/20 z-0"></div>
 
       {/* Летающие логотипы */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
